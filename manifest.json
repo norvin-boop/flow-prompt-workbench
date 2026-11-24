@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Flow Prompt Workbench",
+  "version": "1.4.0",
+  "description": "Saved prompts and approval tracking for Google Flow production projects.",
+  "permissions": ["sidePanel", "storage", "clipboardWrite", "scripting"],
+  "optional_host_permissions": ["https://drive.google.com/*"],
+  "action": {"default_title": "Open Flow Prompt Workbench"},
+  "background": {"service_worker": "background.js"},
+  "side_panel": {"default_path": "panel.html"},
+  "content_scripts": [{
+    "matches": [
+      "https://flow.google.com/*",
+      "https://labs.google/fx/tools/flow*",
+      "https://labs.google/fx/*/tools/flow*",
+      "https://labs.google/fx/flow*",
+      "https://labs.google/flow*"
+    ],
+    "js": ["flow-bridge.js"]
+  }]
+}
