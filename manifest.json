@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Flow Prompt Workbench",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Saved prompts and approval tracking for Google Flow production projects.",
   "permissions": ["sidePanel", "storage", "clipboardWrite", "scripting"],
   "optional_host_permissions": ["https://drive.google.com/*"],

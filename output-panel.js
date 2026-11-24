@@ -48,7 +48,7 @@ export function setupOutputPanel({ $, on, status, persistFolder }) {
     $('project-account-editor').hidden = !active;
     const job = uploadJob && uploadJob.packageId === delivery?.packageId ? uploadJob : null;
     const deliveryState = job ? 'uploading' : transfer?.state || (delivery ? 'ready' : '');
-    cards.observe(active, deliveryState);
+    cards.observe(active, deliveryState, uploadJob);
     if (!active) return;
     $('output-title').textContent = title();
     $('output-note').textContent = describeProject(active, deliveryState).note;
@@ -143,7 +143,7 @@ export function setupOutputPanel({ $, on, status, persistFolder }) {
     const record = delivery;
     if (!record || !folder || $('send-zip').disabled) return;
     working = true;
-    uploadJob = { packageId: record.packageId, message: 'Opening the selected Drive folder…' };
+    uploadJob = { packageId: record.packageId, projectKey: record.id, message: 'Opening the selected Drive folder…' };
     render();
     try {
       // Request access in the user's click gesture, before doing asynchronous work.

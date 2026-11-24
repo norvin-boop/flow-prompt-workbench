@@ -1,4 +1,4 @@
-# Flow Prompt Workbench 1.4.0
+# Flow Prompt Workbench 1.4.1
 
 A Chrome and Microsoft Edge sidebar with saved Google Flow Agent prompts.
 
@@ -33,7 +33,7 @@ The remaining workflow buttons prepare drafts. Review and send them in Flow. Kee
 
 1. **Projects** shows cards for open and previously seen Flow projects in this browser profile. Open tabs can show visible Agent activity and a media thumbnail when available. Click a card to switch to the project’s tab or reopen it. The card shows the Google account Flow exposes, or the account slot in the project URL. Use **Label active project’s account** to set an explicit label. Project names, links, and account labels are stored locally. Refresh Flow tabs that were already open when you updated the extension so Workbench can discover them. **Delivery** is for the active project.
 2. **Delivery ZIP** accepts the downloaded approved ZIP or one or more approved MP4, MOV, WebM, or M4V files. Workbench can package selected videos up to 4 GB into a ZIP. **Download ZIP** retrieves the project’s attached copy. The ZIP stays in this browser profile and is associated with that Flow project.
-3. Paste the destination Drive folder URL in **Upload link here** and click **Send**. On first use, allow Workbench access to Google Drive. It opens the folder and uses that account’s **New → File upload** command. The progress bar shows ZIP preparation and Drive’s reported upload progress, or an indeterminate state when Drive supplies no percentage. **View Drive upload** opens the upload tab. The bar reaches 100% once Workbench sees a matching receipt or the ZIP in that folder.
+3. Paste the destination Drive folder URL in **Upload link here** and click **Send**. On first use, allow Workbench access to Google Drive. It opens the folder and uses that account’s **New → File upload** command. The progress bars on the project card and in Delivery show ZIP preparation and Drive’s reported upload progress, or an indeterminate state when Drive supplies no percentage. **View Drive upload** opens the upload tab. The bars reach 100% once Workbench sees a matching receipt or the ZIP in that folder.
 4. Direct Send supports ZIPs up to 512 MB. For a larger ZIP, unsupported Drive interface, or unavailable browser permission, click **Download ZIP** and use **Open folder** to upload manually. If a previous submission is unconfirmed, check Drive for the file before allowing another send. Workbench does not automatically repeat the upload.
 
 ## AI Review & Automation

@@ -102,6 +102,7 @@ a { color: var(--focus); }
 .project-card-title { grid-area: title; min-width: 0; overflow-wrap: anywhere; font-size: 12px; line-height: 1.25; }
 .project-card-arrow { grid-area: arrow; }
 .project-card-account { grid-area: account; color: var(--muted); font-size: 10px; font-weight: 500; overflow-wrap: anywhere; }
+.project-upload-progress { grid-column: 1 / -1; width: 100%; height: 8px; }
 .project-badge { grid-area: badge; justify-self: start; padding: 1px 4px; border: 1px solid currentColor; font-size: 10px; line-height: 1.3; overflow-wrap: anywhere; }
 .project-badge[data-state="success"] { color: var(--green); }
 .project-badge[data-state="working"] { color: var(--amber); }
@@ -113,9 +114,10 @@ a { color: var(--focus); }
 .output-card h3 { border-bottom: 1px solid var(--border); padding-bottom: 4px; }
 .output-card summary span, #output-note { overflow-wrap: anywhere; }
 .upload-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: baseline; }
-#upload-progress { width: 100%; height: 14px; accent-color: var(--green); border: 1px solid var(--border); }
-#upload-progress::-webkit-progress-bar { background: var(--page); }
-#upload-progress::-webkit-progress-value { background: var(--green); }
+#upload-progress { width: 100%; height: 14px; }
+#upload-progress, .project-upload-progress { accent-color: var(--green); border: 1px solid var(--border); }
+#upload-progress::-webkit-progress-bar, .project-upload-progress::-webkit-progress-bar { background: var(--page); }
+#upload-progress::-webkit-progress-value, .project-upload-progress::-webkit-progress-value { background: var(--green); }
 .file-button { position: relative; cursor: pointer; }
 .file-button input { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
 .file-button:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }

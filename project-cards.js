@@ -48,6 +48,7 @@ export function setupProjectCards({ $, status }) {
   let live = [];
   let active = null;
   let activeDelivery = '';
+  let currentUpload = null;
   let signature = '';
   let refreshing = false;
   let switching = false;
@@ -119,6 +120,14 @@ export function setupProjectCards({ $, status }) {
       button.append(image);
     }
     button.append(title, account, badge, arrow);
+    if (project.progress) {
+      const progress = document.createElement('progress');
+      progress.className = 'project-upload-progress';
+      progress.max = 100;
+      progress.setAttribute('aria-label', 'Drive upload progress for ' + project.name);
+      if (Number.isFinite(project.progress.percent)) progress.value = project.progress.percent;
+      button.append(progress);
+    }
     button.addEventListener('click', () => openProject(project).catch(error => status(error.message, true)));
     row.append(button);
     return row;
@@ -139,14 +148,16 @@ export function setupProjectCards({ $, status }) {
     }
     const cards = [...projects.values()].map(project => {
       const saved = details.get(project.key) || {};
-      const delivery = project.key === active?.key ? activeDelivery : saved.delivery;
+      const uploading = currentUpload?.projectKey === project.key;
+      const delivery = uploading ? 'uploading' : project.key === active?.key ? activeDelivery : saved.delivery;
       const state = project.offline && !delivery
         ? { label: 'Open in Flow', note: 'Open the project to refresh its status.' }
         : describeProject(project, delivery);
       return {
         key: project.key, tabId: project.tabId, url: flowProjectUrl(project.url, project.key),
         name: projectName(project.title), thumbnail: thumbnailUrl(project.thumbnail),
-        account: saved.alias || project.account, current: project.key === active?.key, state
+        account: saved.alias || project.account, current: project.key === active?.key, state,
+        progress: uploading ? { percent: currentUpload.percent } : state.label === 'Uploaded' ? { percent: 100 } : null
       };
     }).filter(project => project.url || project.current);
     cards.sort((a, b) => Number(b.current) - Number(a.current) || a.name.localeCompare(b.name));
@@ -241,10 +252,11 @@ export function setupProjectCards({ $, status }) {
   setInterval(refreshSafely, 4500);
 
   return {
-    observe(context, delivery) {
+    observe(context, delivery, upload) {
       const changed = context?.key !== active?.key;
       active = context;
       activeDelivery = delivery || '';
+      currentUpload = upload;
       if (context) remember([context]);
       if (changed && context) {
         const field = $('project-account-label');
