@@ -1,6 +1,6 @@
 import { readDelivery, saveDelivery } from './styles.js';
 import { deliveryZip } from './zip.js';
-import { driveFolder, driveHost, driveUploadLimit, uploadZip } from './drive.js';
+import { driveFolder, driveUploadLimit, uploadZip } from './drive.js';
 import { setupProjectCards } from './project-cards.js';
 import { describeProject, projectDeliveryKey, projectName } from './project-status.js';
 
@@ -10,7 +10,7 @@ function readableSize(size) {
     : Math.max(1, Math.round(size / 1024)) + ' KB';
 }
 
-export function setupOutputPanel({ $, on, status, persistFolder }) {
+export function setupOutputPanel({ $, on, status, persistFolder, driveAccount }) {
   let active = null;
   let delivery = null;
   let transfer = null;
@@ -57,10 +57,11 @@ export function setupOutputPanel({ $, on, status, persistFolder }) {
       : 'Add the approved collection ZIP from Flow, or choose approved videos to package.';
     $('output-files').disabled = packaging || working;
     const folder = driveFolder($('upload-link').value);
+    const authorized = driveAccount.canUpload(folder);
     $('open-folder').hidden = !folder;
     if (folder) $('open-folder').href = folder.url;
     else $('open-folder').removeAttribute('href');
-    $('send-zip').disabled = !delivery || !folder || working || packaging || delivery.file.size > driveUploadLimit
+    $('send-zip').disabled = !delivery || !folder || !authorized || working || packaging || delivery.file.size > driveUploadLimit
       || transfer?.state === 'uploaded' || transfer?.state === 'check' || transfer?.state === 'uploading';
     $('upload-link').disabled = working;
     $('allow-resend').hidden = working || transfer?.state !== 'check';
@@ -69,11 +70,16 @@ export function setupOutputPanel({ $, on, status, persistFolder }) {
     if (job && Number.isFinite(job.percent)) progress.value = job.percent;
     else if (transfer?.state === 'uploaded') progress.value = 100;
     else progress.removeAttribute('value');
-    $('upload-tab').hidden = !(job?.tabId || transfer?.tabId);
+    $('authorize-drive').hidden = !folder || authorized || working;
+    const uploadedUrl = transfer?.state === 'uploaded' && /^https:\/\/drive\.google\.com\/file\/d\/[\w-]+\/view$/.test(transfer.url || '');
+    $('uploaded-file').hidden = !uploadedUrl;
+    if (uploadedUrl) $('uploaded-file').href = transfer.url;
+    else $('uploaded-file').removeAttribute('href');
     $('upload-status').textContent = delivery?.file.size > driveUploadLimit
       ? 'For ZIPs larger than 512 MB, download the file and upload it from the Drive folder.'
-      : job?.message || transfer?.message || '';
+      : job?.message || transfer?.message || (folder && !authorized ? 'Authorize this folder in Presets & Settings, or use Download ZIP and Open folder.' : '');
   }
+  driveAccount.observe(render);
 
   async function saveTransfer(record, next) {
     const summaryKey = projectDeliveryKey(record.id);
@@ -119,19 +125,10 @@ export function setupOutputPanel({ $, on, status, persistFolder }) {
 
   on('upload-link', 'input', render);
   on('upload-link', 'change', async () => persistFolder($('upload-link').value));
-  on('upload-tab', 'click', async () => {
-    const job = uploadJob?.packageId === delivery?.packageId ? uploadJob : null;
-    const source = job || transfer;
-    if (!source?.tabId) return;
-    const folder = driveFolder(source.folder);
-    const tab = await chrome.tabs.get(source.tabId).catch(() => null);
-    const current = tab?.url && driveFolder(tab.url);
-    if (folder && current?.id === folder.id) {
-      await chrome.tabs.update(tab.id, { active: true });
-      if (tab.windowId !== undefined && chrome.windows?.update) await chrome.windows.update(tab.windowId, { focused: true });
-    } else if (folder) {
-      await chrome.tabs.create({ url: folder.url });
-    }
+  on('authorize-drive', 'click', () => {
+    $('tab-settings').click();
+    $('drive-settings').open = true;
+    $('drive-settings').scrollIntoView({ block: 'nearest' });
   });
   on('allow-resend', 'click', async () => {
     if (!delivery || transfer?.state !== 'check' || working) return;
@@ -143,12 +140,9 @@ export function setupOutputPanel({ $, on, status, persistFolder }) {
     const record = delivery;
     if (!record || !folder || $('send-zip').disabled) return;
     working = true;
-    uploadJob = { packageId: record.packageId, projectKey: record.id, message: 'Opening the selected Drive folder…' };
+    uploadJob = { packageId: record.packageId, projectKey: record.id, message: 'Checking your Google account and folder…' };
     render();
     try {
-      // Request access in the user's click gesture, before doing asynchronous work.
-      const granted = await chrome.permissions.request({ origins: [driveHost] });
-      if (!granted) throw new Error('Drive access was declined. Download the ZIP and use Open folder to upload it manually.');
       await navigator.locks.request(transferKey(record.packageId), async () => {
         const key = transferKey(record.packageId);
         const existing = (await chrome.storage.local.get(key))[key];
@@ -156,20 +150,20 @@ export function setupOutputPanel({ $, on, status, persistFolder }) {
           throw new Error('Check the existing Drive upload before sending this ZIP again.');
         }
         let dispatched = false;
-        const destination = () => ({ tabId: uploadJob?.tabId, folder: folder.url });
+        const destination = { folder: folder.url };
         try {
-          const result = await uploadZip(folder, record.file, async () => {
-            await saveTransfer(record, { ...destination(), state: 'check', message: 'Check the Drive folder before sending again.' });
+          const result = await uploadZip(folder, record.file, driveAccount.request, async () => {
+            await saveTransfer(record, { ...destination, state: 'check', message: 'Check the Drive folder before sending again.' });
             dispatched = true;
           }, progress => {
             uploadJob = { ...uploadJob, ...progress, percent: progress.percent };
             render();
           });
-          await saveTransfer(record, { ...destination(), ...result });
+          await saveTransfer(record, { ...destination, ...result });
           if (delivery?.packageId === record.packageId) status(result.message, result.state !== 'uploaded');
         } catch (error) {
-          const message = dispatched ? 'Drive did not confirm the upload. Check the destination before sending again.' : error.message;
-          await saveTransfer(record, { ...destination(), state: dispatched ? 'check' : 'failed', message });
+          const message = dispatched ? error.message + ' Check the destination before sending again.' : error.message;
+          await saveTransfer(record, { ...destination, state: dispatched ? 'check' : 'failed', message });
           throw new Error(message);
         }
       });

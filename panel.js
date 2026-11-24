@@ -2,6 +2,7 @@ import { audioActions, defaultPreset, defaultSettings, getPreset, makePrompt, mi
 import { setupReviewPanel } from './review-panel.js';
 import { encodeStyle, readStyles, saveStyle, toPng } from './styles.js';
 import { driveFolder } from './drive.js';
+import { setupDriveAccount } from './drive-account.js';
 import { setupOutputPanel } from './output-panel.js';
 import { setupStyleViewer, setupTabs } from './view-controls.js';
 
@@ -242,8 +243,9 @@ const reviewPanel = setupReviewPanel({
   getPrompt: action => makePrompt(action, settings, selectedStyle(), overrides),
   isCurrent: target => active?.key === target.key && active?.tabId === target.tabId
 });
+const driveAccount = setupDriveAccount({ $, on, status, getFolder: () => $('upload-link').value || settings.uploadFolder });
 const outputPanel = setupOutputPanel({
-  $, on, status,
+  $, on, status, driveAccount,
   persistFolder: async value => {
     const saving = saveSetting('uploadFolder', value);
     $('uploadFolder').value = value;

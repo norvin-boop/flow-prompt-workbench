@@ -1,4 +1,4 @@
-# Flow Prompt Workbench 1.4.1
+# Flow Prompt Workbench 1.5.0
 
 A Chrome and Microsoft Edge sidebar with saved Google Flow Agent prompts.
 
@@ -33,8 +33,22 @@ The remaining workflow buttons prepare drafts. Review and send them in Flow. Kee
 
 1. **Projects** shows cards for open and previously seen Flow projects in this browser profile. Open tabs can show visible Agent activity and a media thumbnail when available. Click a card to switch to the project’s tab or reopen it. The card shows the Google account Flow exposes, or the account slot in the project URL. Use **Label active project’s account** to set an explicit label. Project names, links, and account labels are stored locally. Refresh Flow tabs that were already open when you updated the extension so Workbench can discover them. **Delivery** is for the active project.
 2. **Delivery ZIP** accepts the downloaded approved ZIP or one or more approved MP4, MOV, WebM, or M4V files. Workbench can package selected videos up to 4 GB into a ZIP. **Download ZIP** retrieves the project’s attached copy. The ZIP stays in this browser profile and is associated with that Flow project.
-3. Paste the destination Drive folder URL in **Upload link here** and click **Send**. On first use, allow Workbench access to Google Drive. It opens the folder and uses that account’s **New → File upload** command. The progress bars on the project card and in Delivery show ZIP preparation and Drive’s reported upload progress, or an indeterminate state when Drive supplies no percentage. **View Drive upload** opens the upload tab. The bars reach 100% once Workbench sees a matching receipt or the ZIP in that folder.
-4. Direct Send supports ZIPs up to 512 MB. For a larger ZIP, unsupported Drive interface, or unavailable browser permission, click **Download ZIP** and use **Open folder** to upload manually. If a previous submission is unconfirmed, check Drive for the file before allowing another send. Workbench does not automatically repeat the upload.
+3. Paste the destination Drive folder URL in **Upload link here**. Connect the account and authorize that folder in **Presets & Settings → Google Drive Account**. Click **Send** once it is enabled. Progress advances as Google acknowledges upload chunks. **View uploaded ZIP** appears after Google confirms the file in the selected folder.
+4. Direct Send supports ZIPs up to 512 MB. For a larger ZIP or an unconnected account, use **Download ZIP** and **Open folder**, then upload through Drive. If a prior attempt was unconfirmed, check the folder before unlocking a retry.
+
+## Connect Google Drive
+
+Workbench uses Google Picker to obtain access to a specific destination folder. It uses the Google Drive API for uploads. This works with Chrome or Edge through a local helper and requires a Google Cloud Desktop OAuth client.
+
+1. In a Google Cloud project you or your team controls, enable the **Google Drive API** and **Google Picker API**. Configure the Google Auth consent screen and allow the intended Google account to authorize the app. If your app is in external testing, add that account as a test user. Create an OAuth client of type **Desktop app** and download its JSON file. Store the file outside the extension and outside the public repository.
+2. Install Node.js 22 or later if needed. In the extracted Workbench folder, open a terminal and start the helper. In **Presets & Settings → Google Drive Account**, use **Copy Extension ID** for the second argument.
+
+   ```powershell
+   node drive-bridge.mjs "C:\path\to\desktop-oauth.json" "YOUR_EXTENSION_ID"
+   ```
+
+3. Paste the intended Drive folder URL into **Upload link here** in Output. Back in **Google Drive Account**, enter the pairing code from the helper terminal and select **Connect or Change Google Account**. Allow the localhost permission. Sign in to Google, grant the per-file Drive permission, and select the destination folder in Google Picker. Return to Workbench and verify its displayed account and approved folder.
+4. Keep the helper running while sending ZIPs. The helper holds Google tokens in memory on your computer. Closing it clears that session, and restarting it generates a new pairing code. Use **Connect or Change Google Account** to authorize a different folder or account. Workbench checks upload permission on the exact folder each time you send.
 
 ## AI Review & Automation
 

@@ -60,6 +60,21 @@
       </div>
     </section>
     <section id="pane-settings" role="tabpanel" aria-labelledby="tab-settings" tabindex="0" hidden>
+      <details class="card" id="drive-settings">
+        <summary>Google Drive Account</summary>
+        <div class="body">
+          <strong id="drive-account-status" role="status">Google Drive is disconnected.</strong>
+          <p class="hint" id="drive-authorized-folder"></p>
+          <p class="hint">Start the local Drive helper, pair it here, then choose the Google account and folder in Google Picker.</p>
+          <a href="https://github.com/norvin-boop/flow-prompt-workbench#connect-google-drive" target="_blank" rel="noreferrer">Drive setup guide ↗</a>
+          <button type="button" class="text-button" id="copy-extension-id">Copy Extension ID</button>
+          <label>Local helper pairing code<input type="password" id="drive-pairing-key" maxlength="43" autocomplete="off" spellcheck="false"></label>
+          <div class="buttons">
+            <button id="drive-connect" type="button">Connect or Change Google Account</button>
+            <button id="drive-disconnect" class="secondary" type="button" disabled>Disconnect</button>
+          </div>
+        </div>
+      </details>
       <details class="card review-card" id="assistant-card">
         <summary>AI Review &amp; Automation</summary>
         <div class="body">
@@ -141,7 +156,8 @@
               <div class="upload-row"><input id="upload-link" type="url" required placeholder="https://drive.google.com/drive/folders/…"><button id="send-zip" type="submit" disabled>Send</button></div>
             </form>
             <a id="open-folder" target="_blank" rel="noreferrer" hidden>Open folder ↗</a>
-            <button id="upload-tab" class="text-button" type="button" hidden>View Drive upload ↗</button>
+            <button id="authorize-drive" class="text-button" type="button" hidden>Set Up Google Drive Upload</button>
+            <a id="uploaded-file" target="_blank" rel="noreferrer" hidden>View uploaded ZIP ↗</a>
             <progress id="upload-progress" max="100" aria-label="Drive upload progress" hidden></progress>
             <p id="upload-status" class="hint" role="status"></p>
             <button id="allow-resend" class="secondary" type="button" hidden>Allow Retry After Checking Drive</button>
